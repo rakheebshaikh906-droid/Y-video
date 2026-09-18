@@ -1,4 +1,8 @@
 import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+
+import { router } from './routes/user.routes.js';
 
 const app = express();
 
@@ -10,14 +14,10 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '50mb' }));
-//files se data lena rehta isliye used karte apun
-
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-//url se data lena rehta isliye used karte apun
-
 app.use(express.static('public'));
-//jab pdf, images, videos, etc. ka data lena rehta hai to use karte apun
-
 app.use(cookieParser());
 
-export default app;
+app.use('/api/v1/users', router);
+
+export { app };
