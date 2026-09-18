@@ -1,7 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import uploadToCloudinary from '../utils/cloudinary.js';
-import User from '../models/users.models.js';
+import { User } from '../models/users.models.js';
 import { ApiResponce } from '../utils/ApiResponse.js';
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -30,8 +30,8 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "User already exists");
     }
     //4) multer se image upload karna hai juh locally store ho rahi hai, usko cloudinary pe upload karna hai
-    const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+    const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar is required");
