@@ -30,6 +30,7 @@ export const verifyJwt = asyncHandler(async (req, res, next) => {
     } catch (error) {
         //error ko handle karo
         return next(new ApiError(401, error?.message || "unauthorized"));
+        //res.status(401).json({ success: false, message: error?.message || "unauthorized" });
     }
 })
 
