@@ -147,4 +147,36 @@ const loginUser = asyncHandler(async (req, res) => {
         );
 
 });
-export { registerUser, loginUser };
+
+const logoutUser = asyncHandler(async (req, res) => {
+    //middle ware lekhnge apun juh check karenga jaise verify jwt
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $unset: {
+                refreshToken: 1 //refreshToken: undefined , refreshToken: "".
+            }
+
+        },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "none",
+        secure: true
+    }
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(
+            new ApiResponce(200, {}, "User logged out successfully")
+        );
+});
+
+export { registerUser, loginUser, logoutUser };
