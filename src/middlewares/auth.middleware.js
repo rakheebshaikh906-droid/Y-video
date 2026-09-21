@@ -1,9 +1,16 @@
-import { ApiError } from "../utils/ApiError";
+import { ApiError } from "../utils/ApiError.js";
 import jwt from "jsonwebtoken";
-import { asyncHandler } from "../utils/asyncHandler";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/users.models.js";
 
 export const verifyJwt = asyncHandler(async (req, res, next) => {
+    //algorithm 
+    //1)pehle token lao
+    //2)token ko verify karo
+    //3)token se user id nikalo
+    //4)database me user check karo
+    //5)user ko req.user ke dalo
+    //6)phir next() karke actual api ko chalne do 
 
     try {
         //token leke aao 
