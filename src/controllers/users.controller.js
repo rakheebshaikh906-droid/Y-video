@@ -241,4 +241,7 @@ const getCurrentuser = asyncHandler(async (req, res) => {
             "User found successfully"));
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword };
+export {
+    registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword
+    , getCurrentuser
+};
