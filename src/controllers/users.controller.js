@@ -267,6 +267,7 @@ const updateAvatarimage = asyncHandler(async (req, res) => {
     if (!avatarLocalPath) {
         throw new ApiError(400, "avatar image is required");
     }
+
     const avatar = await uploadToCloudinary(avatarLocalPath);
     if (!avatar.url) {
         throw new ApiError(500, "something went wrong");
@@ -287,7 +288,34 @@ const updateAvatarimage = asyncHandler(async (req, res) => {
         .json(new ApiResponce(200, user, "avatar updated successfully"));
 });
 
+const updateCoverImage = asyncHandler(async (req, res) => {
+    const coverImageLocalPath = req.file?.path;
+    if (!coverImageLocalPath) {
+        throw new ApiError(400, "cover image is required");
+    }
+
+    const coverImage = await uploadToCloudinary(coverImageLocalPath);
+    if (!coverImage.url) {
+        throw new ApiError(500, "something went wrong");
+    }
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                coverImage: coverImage.url
+            }
+        },
+        {
+            new: true
+        }.select("-password ")
+    )
+    return res
+        .status(200)
+        .json(new ApiResponce(200, user, "cover image updated successfully"));
+});
+
+
 export {
     registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword
-    , getCurrentuser, updateAccountDetails
+    , getCurrentuser, updateAccountDetails, updateAvatarimage
 };
