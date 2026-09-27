@@ -23,6 +23,7 @@ router.route("/login").post(loginUser);
 //logout user Route         //middleware
 //secure route
 router.route("/logout").post(verifyJwt, logoutUser);
+router.route("/refresh-token").post(refreshAccessToken);
 
 
 export { router };
