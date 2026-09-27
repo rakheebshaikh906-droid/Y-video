@@ -26,6 +26,7 @@ router.route("/logout").post(verifyJwt, logoutUser);
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJwt, changeCurrentPassword);
 router.route("/current-user").get(verifyJwt, getCurrentuser);
+router.route("/update-account-details").patch(verifyJwt, updateAccountDetails);
 
 
 export { router };
