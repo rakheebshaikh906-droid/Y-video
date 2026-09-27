@@ -27,6 +27,8 @@ router.route("/refresh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJwt, changeCurrentPassword);
 router.route("/current-user").get(verifyJwt, getCurrentuser);
 router.route("/update-account-details").patch(verifyJwt, updateAccountDetails);
+router.route("/update-avatar-image").patch(verifyJwt, upload.single("avatar"), updateAvatarimage);
+router.route("/get-cover-image").patch(verifyJwt, upload.single("coverImage"), getUserChannelProfile);
 
 
 export { router };
