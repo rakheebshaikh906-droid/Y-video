@@ -3,6 +3,7 @@ import { ApiError } from '../utils/ApiError.js';
 import uploadToCloudinary from '../utils/cloudinary.js';
 import { User } from '../models/users.models.js';
 import { ApiResponce } from '../utils/ApiResponse.js';
+import mongoose from 'mongoose';
 //import comparePassword from '../models'
 //generate AccestokenAndRefereshToken
 
@@ -383,8 +384,60 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         .json(new ApiResponce(200, channel[0], "channel profile found successfully"))
 })
 
+const getWatchHistory = asyncHandler(async (req, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup: {
+                from: "Video",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "User ",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields: {
+                            owner: {
+                                $first: "$owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    return res.
+        status(200)
+        .json(
+            new ApiResponce(
+                200, user[0].watchHistory, "watch history found successfully"
+
+            ))
+})
+
 
 export {
     registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword
-    , getCurrentuser, updateAccountDetails, updateAvatarimage, getUserChannelProfile
+    , getCurrentuser, updateAccountDetails, updateAvatarimage, getUserChannelProfile, getWatchHistory
 };
