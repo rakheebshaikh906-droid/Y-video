@@ -78,4 +78,4 @@ const deleteTweets = asyncHandler(async (req, res) => {
 
 });
 
-export { createTweet, getUserTweets, updateTweet };
+export { createTweet, getUserTweets, updateTweet, deleteTweets };
