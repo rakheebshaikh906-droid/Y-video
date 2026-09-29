@@ -4,6 +4,31 @@ import asyncHandler from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponce } from "../utils/ApiResponse.js";
 
+const getVideoComment = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+
+    const pipeline = [
+        {
+            $match: {
+                video: new mongoose.Types.ObjectId(videoId)
+            }
+        }
+    ];
+
+    const comments = await Comment.aggregatePaginate(
+        Comment.aggregate(pipeline),
+        {
+            page: Number(page),
+            limit: Number(limit)
+        }
+    );
+
+    return res.status(200).json(new ApiResponce(200, comments, "comments fetched successfully"));
+
+
+})
+
 const addComment = asyncHandler(async (req, res) => {
     const { content } = req.body;
     const owner = req.user._id;
