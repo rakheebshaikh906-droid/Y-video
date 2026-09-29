@@ -16,4 +16,31 @@ const addComment = asyncHandler(async (req, res) => {
     return res.status(201).json(new ApiResponce(201, comment, "comment created successfully"));
 })
 
-export { addComment };
+const updateComment = asyncHandler(async (req, res) => {
+    const commentId = req.params.id;
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+        throw new ApiError(404, "Comment not found");
+    }
+    if (comment.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to update this comment");
+    }
+    const updatedComment = await Comment.findByIdAndUpdate(
+        commentId,
+        { $set: req.body },
+        { new: true, runValidators: true }
+    );
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponce(
+                200,
+                updatedComment,
+                "Comment updated successfully"
+            )
+        );
+})
+
+export { addComment, updateComment };
