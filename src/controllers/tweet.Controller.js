@@ -16,3 +16,43 @@ const createTweet = asyncHandler(async (req, res) => {
     const tweet = await Tweet.create({ content, owner });
     return res.status(201).json(new ApiResponce(201, tweet, "tweet created successfully"));
 });
+
+const getUserTweets = asyncHandler(async (req, res) => {
+    //pehle apun uski id nikaleninge 
+    //phir check karenge uski id pe se usne kitne tweets kara hai
+
+    const user = req.user;
+    const tweets = await Tweet.find({ owner: user._id });
+    return res.status(200).json(new ApiResponce(200, tweets, "tweets fetched successfully"));
+
+});
+
+const updateTweet = asyncHandler(async (req, res) => {
+
+    const tweetId = req.params.id;
+    const tweet = await Tweet.findById(tweetId);
+
+    if (!tweet) {
+        throw new ApiError(404, "Tweet not found");
+    }
+    if (tweet.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to update this tweet");
+    }
+    const updatedTweet = await Tweet.findByIdAndUpdate(
+        tweetId,
+        { $set: req.body },
+        { new: true, runValidators: true }
+    );
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponce(
+                200,
+                updatedTweet,
+                "Tweet updated successfully"
+            )
+        );
+});
+
+export { createTweet, getUserTweets, updateTweet };
