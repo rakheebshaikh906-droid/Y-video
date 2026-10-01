@@ -93,3 +93,121 @@ const getAllVideos = asyncHandler(async (req, res) => {
             )
         );
 });
+
+const publishAVideo = asyncHandler(async (req, res) => {
+
+    const { title, description } = req.body;
+
+    if (!title?.trim()) {
+        throw new ApiError(400, "Title is required");
+    }
+
+    if (!description?.trim()) {
+        throw new ApiError(400, "Description is required");
+    }
+
+    const videoFile = req.files?.videoFile?.[0];
+
+    if (!videoFile) {
+        throw new ApiError(400, "Video file is required");
+    }
+
+    const uploadedVideo = await uploadOnCloudinary(videoFile.path);
+
+    if (!uploadedVideo) {
+        throw new ApiError(500, "Video upload failed");
+    }
+
+    const video = await Video.create({
+        videoFile: uploadedVideo.url,
+        title,
+        description,
+        owner: req.user._id
+    });
+
+    if (!video) {
+        throw new ApiError(500, "Something went wrong while publishing video");
+    }
+
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(
+                201,
+                video,
+                "Video published successfully"
+            )
+        );
+});
+
+const getVideoById = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid video id");
+    }
+
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                video,
+                "Video fetched successfully"
+            )
+        );
+})
+
+const updateVideo = asyncHandler(async (req, res) => {
+
+    const { videoId } = req.params;
+    const { title, description, thumbnail } = req.body;
+
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid video id");
+    }
+
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    if (video.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(
+            403,
+            "You are not authorized to update this video"
+        );
+    }
+
+    if (title !== undefined) {
+        video.title = title;
+    }
+
+    if (description !== undefined) {
+        video.description = description;
+    }
+
+    if (thumbnail !== undefined) {
+        video.thumbnail = thumbnail;
+    }
+
+    await video.save();
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                video,
+                "Video updated successfully"
+            )
+        );
+});
+
+export { getAllVideos, publishAVideo, getVideoById, updateVideo }
