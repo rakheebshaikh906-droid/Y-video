@@ -4,7 +4,11 @@ const playlist = new Schema({
     name: {
         type: String,
         required: true,
+        unique: true,
         required: true
+    },
+    thumbnail: {
+        type: String
     },
     description: {
         type: String
