@@ -4,13 +4,15 @@ const playlist = new Schema({
     name: {
         type: String,
         required: true,
+        required: true
     },
     description: {
         type: String
     },
     owner: {
         type: Schema.Types.ObjectId,
-        ref: "User"
+        ref: "User",
+        required: true
     },
     videos: [{
         type: Schema.Types.ObjectId,
