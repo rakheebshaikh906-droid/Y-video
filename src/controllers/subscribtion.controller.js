@@ -1,8 +1,8 @@
 import mongoose, { isValidObjectId } from "mongoose"
-import { User } from "../models/user.model.js"
-import { Subscription } from "../models/subscription.model.js"
+import { User } from "../models/users.models.js"
+import { Subscriber } from "../models/subscriber.models.js"
 import { ApiError } from "../utils/ApiError.js"
-import { ApiResponse } from "../utils/ApiResponse.js"
+import { ApiResponce } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 const toggleSubscription = asyncHandler(async (req, res) => {
@@ -18,16 +18,16 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Channel not found");
     }
 
-    const subscription = await Subscription.findOne({
+    const subscription = await Subscriber.findOne({
         subscriber: req.user._id,
         channel: channel._id
     });
 
     if (subscription) {
-        await Subscription.findByIdAndDelete(subscription._id);
+        await Subscriber.findByIdAndDelete(subscription._id);
 
         return res.status(200).json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 {
                     subscribed: false
@@ -37,13 +37,13 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         );
     }
 
-    const newSubscription = await Subscription.create({
+    const newSubscription = await Subscriber.create({
         subscriber: req.user._id,
         channel: channel._id
     });
 
     return res.status(200).json(
-        new ApiResponse(
+        new ApiResponce(
             200,
             {
                 subscribed: true
@@ -67,12 +67,12 @@ const getUserSubscriptions = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User not found");
     }
 
-    const subscriptions = await Subscription.find({
+    const subscriptions = await Subscriber.find({
         subscriber: user._id,
     });
 
     return res.status(200).json(
-        new ApiResponse(
+        new ApiResponce(
             200,
             subscriptions,
             "Subscriptions fetched successfully"
@@ -88,7 +88,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid user id");
     }
 
-    const channels = await Subscription.aggregate([
+    const channels = await Subscriber.aggregate([
         {
             $match: {
                 subscriber: new mongoose.Types.ObjectId(subscriberId)
@@ -108,7 +108,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     ]);
 
     return res.status(200).json(
-        new ApiResponse(
+        new ApiResponce(
             200,
             channels,
             "Subscribed channels fetched successfully"
