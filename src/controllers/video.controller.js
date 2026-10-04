@@ -1,8 +1,8 @@
 import mongoose, { isValidObjectId } from "mongoose"
-import { Video } from "../models/video.model.js"
-import { User } from "../models/user.model.js"
+import { Video } from "../models/video.models.js"
+import { User } from "../models/users.models.js"
 import { ApiError } from "../utils/ApiError.js"
-import { ApiResponse } from "../utils/ApiResponse.js"
+import { ApiResponce } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
@@ -86,7 +86,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 videos,
                 "Videos fetched successfully"
@@ -132,7 +132,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     return res
         .status(201)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 201,
                 video,
                 "Video published successfully"
@@ -155,7 +155,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 video,
                 "Video fetched successfully"
@@ -202,7 +202,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 video,
                 "Video updated successfully"
@@ -230,7 +230,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     await video.findByIdAndDelete(videoId);
 
 
-    return res.status(200).json(new ApiResponse(200, null, "Video deleted successfully"));
+    return res.status(200).json(new ApiResponce(200, null, "Video deleted successfully"));
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
@@ -267,7 +267,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     );
 
     return res.status(200).json(
-        new ApiResponse(
+        new ApiResponce(
             200,
             {
                 isPublished: updatedVideo.isPublished
