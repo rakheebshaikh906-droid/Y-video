@@ -1,9 +1,9 @@
 import mongoose, { isValidObjectId } from "mongoose"
-import { Video } from "../models/video.model.js"
-import { Like } from "../models/like.model.js"
+import { Video } from "../models/video.models.js"
+import { Like } from "../models/likes.models.js"
 import { Tweet } from "../models/tweets.models.js"
 import { ApiError } from "../utils/ApiError.js"
-import { ApiResponse } from "../utils/ApiResponse.js"
+import { ApiResponce } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 
@@ -39,7 +39,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         await Like.findByIdAndDelete(existingLike._id);
 
         return res.status(200).json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 {
                     liked: false
@@ -55,7 +55,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     });
 
     return res.status(200).json(
-        new ApiResponse(
+        new ApiResponce(
             200,
             {
                 liked: true
@@ -87,7 +87,7 @@ const toggleTweetLikes = asyncHandler(async (req, res) => {
         await Like.findByIdAndDelete(existingLike._id);
 
         return res.status(200).json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 {
                     liked: false
@@ -103,7 +103,7 @@ const toggleTweetLikes = asyncHandler(async (req, res) => {
     });
 
     return res.status(200).json(
-        new ApiResponse(
+        new ApiResponce(
             200,
             {
                 liked: true
@@ -135,7 +135,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
         await Like.findByIdAndDelete(existingLike._id);
 
         return res.status(200).json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 {
                     liked: false
@@ -151,7 +151,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     });
 
     return res.status(200).json(
-        new ApiResponse(
+        new ApiResponce(
             200,
             {
                 liked: true
@@ -170,7 +170,7 @@ const getLikesVideo = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 200, likes, "likes fetched successfully"
             ));
 })
