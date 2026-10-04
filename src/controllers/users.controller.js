@@ -46,25 +46,32 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "User already exists");
     }
     //4) multer se image upload karna hai juh locally store ho rahi hai, usko cloudinary pe upload karna hai
-    const avatarLocalPath = req.files?.avatar[0]?.path;
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
     // const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+    //const avatarLocalPath = req.files?.avatar?.[0]?.path;
+
     let coverImageLocalPath;
-    if (req.files && req.files.coverImage && req.files.coverImage.length > 0) {
+
+    if (req.files?.coverImage?.length > 0) {
         coverImageLocalPath = req.files.coverImage[0].path;
     }
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar is required");
     }
-    //5)fifth step to upload the avatar and cover image to cloudinary
+
     const avatar = await uploadToCloudinary(avatarLocalPath);
-    const coverImage = await uploadToCloudinary(coverImageLocalPath);
 
     if (!avatar) {
         throw new ApiError(500, "Failed to upload avatar to cloudinary");
     }
 
-    //5)sixth step to create a new user object and save it to the database
+    let coverImage = null;
+
+    if (coverImageLocalPath) {
+        coverImage = await uploadToCloudinary(coverImageLocalPath);
+    }
+
     const user = await User.create({
         username,
         fullName,
@@ -73,14 +80,14 @@ const registerUser = asyncHandler(async (req, res) => {
         avatar: avatar.secure_url,
         coverImage: coverImage?.secure_url || "",
     });
-    //7)password and refresh token ko user object se remove karna hai
-    const createUser = await User.findById(user._id).select("-password -refreshToken");
-    //check if user creation was successful
+
+    const createUser = await User.findById(user._id)
+        .select("-password -refreshToken");
+
     if (!createUser) {
         throw new ApiError(500, "Failed to create user");
     }
 
-    //8)final step to return the response to the client
     return res.status(201).json(
         new ApiResponce(201, createUser, "User created successfully")
     );
