@@ -1,9 +1,9 @@
 import mongoose from "mongoose"
-import { Video } from "../models/video.model.js"
-import { Subscription } from "../models/subscription.model.js"
-import { Like } from "../models/like.model.js"
+import { Video } from "../models/video.models.js"
+import { Subscriber } from "../models/subscriber.models.js"
+import { Like } from "../models/likes.models.js"
 import { ApiError } from "../utils/ApiError.js"
-import { ApiResponse } from "../utils/ApiResponse.js"
+import { ApiResponce } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 const getChannelState = asyncHandler(async (req, res) => {
@@ -21,11 +21,11 @@ const getChannelState = asyncHandler(async (req, res) => {
     }
 
     const totalVideos = await Video.countDocuments({ owner: channel._id });
-    const totalSubscribers = await Subscription.countDocuments({ channel: channel._id });
+    const totalSubscribers = await Subscriber.countDocuments({ channel: channel._id });
     const totalLikes = await Like.countDocuments({ video: { $in: channel.videos } });
 
     return res.status(200).json(
-        new ApiResponse(
+        new ApiResponce(
             200,
             {
                 totalVideos,
@@ -54,7 +54,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
     const videos = await Video.find({ owner: channel._id });
 
     return res.status(200).json(
-        new ApiResponse(
+        new ApiResponce(
             200,
             videos,
             "Videos fetched successfully"
