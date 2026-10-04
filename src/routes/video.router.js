@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { getAllVideos, publishAVideo, getVideoById, updateVideo, deleteVideo, togglePublishStatus }
     from "../controllers/video.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJwt } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.use(verifyJWT);
+router.use(verifyJwt);
 
 router.route("/").get(getAllVideos);
 router.route("/").post(publishAVideo);
