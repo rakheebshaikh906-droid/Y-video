@@ -11,4 +11,4 @@ router.route("/video/:videoId").get(getVideoComment);
 router.route("/:commentId").patch(updateComment);
 router.route("/:commentId").delete(deleteComment);
 
-export default router
+export { router };
