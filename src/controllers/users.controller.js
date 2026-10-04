@@ -1,6 +1,6 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
-import uploadToCloudinary from '../utils/cloudinary.js';
+import { uploadToCloudinary } from '../utils/cloudinary.js';
 import { User } from '../models/users.models.js';
 import { ApiResponce } from '../utils/ApiResponse.js';
 import mongoose from 'mongoose';
