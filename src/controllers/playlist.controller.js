@@ -1,7 +1,7 @@
 import mongoose, { isValidObjectId } from "mongoose"
 import { Playlist } from "../models/playlist.model.js"
 import { ApiError } from "../utils/ApiError.js"
-import { ApiResponse } from "../utils/ApiResponse.js"
+import { ApiResponce } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 const createPlaylist = asyncHandler(async (req, res) => {
@@ -11,7 +11,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400, "name is required");
     }
     const playlist = await Playlist.create({ name, description, owner });
-    return res.status(201).json(new ApiResponse(201, playlist, "playlist created successfully"));
+    return res.status(201).json(new ApiResponce(201, playlist, "playlist created successfully"));
 });
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
@@ -25,7 +25,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 playlists,
                 "Playlists fetched successfully"
@@ -48,7 +48,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 playlist,
                 "Playlist fetched successfully"
@@ -93,7 +93,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 updatedPlaylist,
                 "Video removed from playlist successfully"
@@ -122,7 +122,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 
     await playlist.findByIdAndDelete(playlistId);
 
-    return res.status(200).json(new ApiResponse(200, null, "Playlist deleted successfully"));
+    return res.status(200).json(new ApiResponce(200, null, "Playlist deleted successfully"));
 })
 const updatePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params;
@@ -157,7 +157,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
+            new ApiResponce(
                 200,
                 updatedPlaylist,
                 "Playlist updated successfully"
