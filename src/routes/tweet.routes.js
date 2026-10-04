@@ -20,4 +20,4 @@ router.route("/:tweetId")
     .patch(updateTweet)
     .delete(deleteTweets);
 
-export default router;
+export { router };
