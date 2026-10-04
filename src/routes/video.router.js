@@ -14,4 +14,4 @@ router.route("/:videoId").patch(updateVideo);
 router.route("/:videoId").delete(deleteVideo);
 router.route("/publish/:videoId").patch(togglePublishStatus);
 
-export default router;
+export { router };
