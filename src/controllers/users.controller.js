@@ -96,133 +96,56 @@ const registerUser = asyncHandler(async (req, res) => {
 
 });
 const loginUser = asyncHandler(async (req, res) => {
-    //get user details from request body
-    //validate user details
-    //check if user exists in the database by username or email
-    //compare the password with the hashed password in the database
-    //generate access token and refresh token
-    //save the refresh token in the database
-    //return the access token and refresh token to the client
-    //return cookies
 
-    //1) get data
-    const { username, email, password } = req.body
+    const { username, email, password } = req.body;
 
     if (!username && !email) {
-        throw new ApiError(400, "username or email is not exists");
+        throw new ApiError(400, "Username or email is required");
     }
 
-    //find the user 
-    const user = User.findOne({
+    const user = await User.findOne({
         $or: [{ username }, { email }]
     });
 
-    //check if user exist or not
     if (!user) {
         throw new ApiError(404, "User not found");
     }
 
-    //check if user enter password are correct or not 
     const isPasswordCorrect = await user.comparePassword(password);
 
-    //check if password is correct or not
     if (!isPasswordCorrect) {
         throw new ApiError(401, "Password is incorrect");
     }
 
-    //give access token and refresh token
-    const { accessToken } = await generateAccessTokenAndRefreshToken(user._id);
+    const { accessToken, refreshToken } =
+        await generateAccessTokenAndRefreshToken(user._id);
 
-    //send the response and cookies 
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+    const loggedInUser = await User.findById(user._id)
+        .select("-password -refreshToken");
 
     const options = {
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
         sameSite: "none",
         secure: true
-    }
+    };
 
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", loggedInUser.refreshToken, options)
+        .cookie("refreshToken", refreshToken, options)
         .json(
-            new ApiResponce(200,
+            new ApiResponce(
+                200,
                 {
-                    user: loggedInUser, accessToken, refreshToken
-                }, "User logged in successfully")
-        );
-
-});
-
-const logoutUser = asyncHandler(async (req, res) => {
-    //middle ware lekhnge apun juh check karenga jaise verify jwt
-    await User.findByIdAndUpdate(
-        req.user._id,
-        {
-            $unset: {
-                refreshToken: 1 //refreshToken: undefined , refreshToken: "".
-            }
-
-        },
-        {
-            new: true
-        }
-    )
-
-    const options = {
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-        sameSite: "none",
-        secure: true
-    }
-
-    return res
-        .status(200)
-        .clearCookie("accessToken", options)
-        .clearCookie("refreshToken", options)
-        .json(
-            new ApiResponce(200, {}, "User logged out successfully")
+                    user: loggedInUser,
+                    accessToken,
+                    refreshToken
+                },
+                "User logged in successfully"
+            )
         );
 });
-
-const refreshAccessToken = asyncHandler(async (req, res) => {
-    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
-    if (!incomingRefreshToken) {
-        throw new ApiError(401, "unauthorized request");
-    }
-    try {
-        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-        const user = await User.findById(decodedToken?.id);
-        if (!user) {
-            throw new ApiError(401, "unauthorized request");
-        }
-        if (incomingRefreshToken !== user?.refreshToken) {
-            throw new ApiError(401, "unauthorized request");
-
-        }
-        const option = {
-            httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000,
-            sameSite: "none",
-            secure: true
-        }
-        const { accessToken, newRefreshToken } = await generateAccessTokenAndRefreshToken(user._id);
-        return res
-            .status(200)
-            .cookie("accessToken", accessToken, option)
-            .cookie("refreshToken", newRefreshToken, option)
-            .json(
-                new ApiResponce(200,
-                    {
-                        user: user, accessToken, refreshToken: newRefreshToken
-                    }, "User logged in successfully")
-            );
-    } catch (error) {
-        throw new ApiError(401, error?.message || "unauthorized request");
-    }
-})
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { currentPassword, newPassword } = req.body;
