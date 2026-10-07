@@ -4,21 +4,35 @@ import { uploadToCloudinary } from '../utils/cloudinary.js';
 import { User } from '../models/users.models.js';
 import { ApiResponce } from '../utils/ApiResponse.js';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 //import comparePassword from '../models'
 //generate AccestokenAndRefereshToken
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId);
+
+        // console.log("USER FOUND:", !!user);
+        // console.log("USER ID:", user?._id);
+
         const accessToken = user.generateAccessToken();
+        // console.log("ACCESS TOKEN GENERATED");
+
         const refreshToken = user.generateRefreshToken();
-        await user.save({ validateBeforeSave: false }); //refresh token ko save karna hai
-        return { accessToken, refreshToken }
+        //console.log("REFRESH TOKEN GENERATED");
+
+        await user.save({ validateBeforeSave: false });
+        // console.log("USER SAVED");
+
+        return { accessToken, refreshToken };
 
     } catch (error) {
-        throw new ApiError(500, 'something went wrong');
+        // console.error("ACTUAL TOKEN ERROR:", error);
+        // console.error("ERROR MESSAGE:", error.message);
+        // console.error("ERROR STACK:", error.stack);
+        throw new ApiError(500, "something went wrong");
     }
-}
+};
 
 const registerUser = asyncHandler(async (req, res) => {
     //get user detatails from fronEnd
@@ -96,39 +110,52 @@ const registerUser = asyncHandler(async (req, res) => {
 
 });
 const loginUser = asyncHandler(async (req, res) => {
+    //get user details from request body
+    //validate user details
+    //check if user exists in the database by username or email
+    //compare the password with the hashed password in the database
+    //generate access token and refresh token
+    //save the refresh token in the database
+    //return the access token and refresh token to the client
+    //return cookies
 
-    const { username, email, password } = req.body;
+    //1) get data
+    const { username, email, password } = req.body
 
     if (!username && !email) {
-        throw new ApiError(400, "Username or email is required");
+        throw new ApiError(400, "username or email is not exists");
     }
 
+    //find the user 
     const user = await User.findOne({
         $or: [{ username }, { email }]
     });
 
+    //check if user exist or not
     if (!user) {
         throw new ApiError(404, "User not found");
     }
 
+    //check if user enter password are correct or not 
     const isPasswordCorrect = await user.comparePassword(password);
 
+    //check if password is correct or not
     if (!isPasswordCorrect) {
         throw new ApiError(401, "Password is incorrect");
     }
 
-    const { accessToken, refreshToken } =
-        await generateAccessTokenAndRefreshToken(user._id);
+    //give access token and refresh token
+    const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(user._id);
 
-    const loggedInUser = await User.findById(user._id)
-        .select("-password -refreshToken");
+    //send the response and cookies 
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
     const options = {
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
         sameSite: "none",
         secure: true
-    };
+    }
 
     return res
         .status(200)
@@ -145,7 +172,97 @@ const loginUser = asyncHandler(async (req, res) => {
                 "User logged in successfully"
             )
         );
+
 });
+
+const logoutUser = asyncHandler(async (req, res) => {
+    //middle ware lekhnge apun juh check karenga jaise verify jwt
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $unset: {
+                refreshToken: 1 //refreshToken: undefined , refreshToken: "".
+            }
+
+        },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "none",
+        secure: true
+    }
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(
+            new ApiResponce(200, {}, "User logged out successfully")
+        );
+});
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "unauthorized request");
+    }
+    try {
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const user = await User.findById(decodedToken?.id);
+        if (!user) {
+            throw new ApiError(401, "unauthorized request");
+        }
+        console.log(
+            "Incoming:",
+            incomingRefreshToken?.slice(0, 15),
+            "...",
+            incomingRefreshToken?.slice(-5)
+        );
+
+        console.log(
+            "DB:",
+            user?.refreshToken?.slice(0, 15),
+            "...",
+            user?.refreshToken?.slice(-5)
+        );
+
+        console.log(
+            "MATCH:",
+            incomingRefreshToken === user?.refreshToken
+        );
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, "unauthorized request");
+
+        }
+        const option = {
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000,
+            sameSite: "none",
+            secure: true
+        }
+        const { accessToken, newRefreshToken } = await generateAccessTokenAndRefreshToken(user._id);
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, option)
+            .cookie("refreshToken", newRefreshToken, option)
+            .json(
+                new ApiResponce(200,
+                    {
+                        user: user, accessToken, refreshToken: newRefreshToken
+                    }, "User logged in successfully")
+            );
+    } catch (error) {
+        console.log("REFRESH TOKEN ERROR:", error);
+        console.log("ERROR MESSAGE:", error.message);
+        console.log("ERROR STACK:", error.stack);
+        throw new ApiError(401, error?.message || "unauthorized request");
+    }
+})
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { currentPassword, newPassword } = req.body;
