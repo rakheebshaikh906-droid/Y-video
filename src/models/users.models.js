@@ -53,13 +53,19 @@ const userSchema = new Schema(
 )
 
 //using bcrypt to hash the password before saving it to the database
-userSchema.pre("save", async function (next) {
+// userSchema.pre("save", async function () {
+//     const salt = await bcrypt.genSalt(10);
+//     this.password = await bcrypt.hash(this.password, salt);
+// });
+
+
+//this was a good option because juh uper wala hai woh error dera tha next ki vaje se 
+userSchema.pre("save", async function () {
     if (!this.isModified("password")) {
-        return next();
+        return;
     }
 
     this.password = await bcrypt.hash(this.password, 10);
-
 });
 
 //using bcrypt to compare the password with the hashed password in the database
