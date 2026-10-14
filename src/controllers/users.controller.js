@@ -324,13 +324,14 @@ const updateAvatarimage = asyncHandler(async (req, res) => {
         req.user._id,
         {
             $set: {
-                avatar: avatar.url
+                avatar: avatar.secure_url
             }
         },
         {
-            new: true
-        }.select("-password ")
-    )
+            new: true,
+            runValidators: true
+        }
+    ).select("-password -refreshToken");
     return res
         .status(200)
         .json(new ApiResponce(200, user, "avatar updated successfully"));
@@ -377,7 +378,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         {
             $lookup: {
-                from: "Subscriber",
+                from: "subscribers",
                 localField: "_id",
                 foreignField: "channel",
                 as: "subscribers"
@@ -385,7 +386,35 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         {
             $lookup: {
-                from: "Subscriber",
+                from: "subscribers",
+                let: {
+                    channelId: "$_id"
+                },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    {
+                                        $eq: ["$channel", "$$channelId"]
+                                    },
+                                    {
+                                        $eq: [
+                                            "$subscriber",
+                                            new mongoose.Types.ObjectId(req.user._id)
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                as: "viewerSubscription"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscribers",
                 localField: "_id",
                 foreignField: "subscriber",
                 as: "subscribedTo"
@@ -396,17 +425,14 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                 subscribersCount: {
                     $size: "$subscribers"
                 },
-                subscribedToCount: {
+                channelSubscribedToCount: {
                     $size: "$subscribedTo"
                 },
                 isSubscribed: {
-                    $cond: {
-                        if: {
-                            $in: [req.user._id, "$subscribedTo"]
-                        },
-                        then: true,
-                        else: false
-                    }
+                    $gt: [
+                        { $size: "$viewerSubscription" },
+                        0
+                    ]
                 }
             }
         },
@@ -430,6 +456,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     return res.status(200)
         .json(new ApiResponce(200, channel[0], "channel profile found successfully"))
 })
+///t
 
 const getWatchHistory = asyncHandler(async (req, res) => {
     const user = await User.aggregate([
@@ -440,14 +467,14 @@ const getWatchHistory = asyncHandler(async (req, res) => {
         },
         {
             $lookup: {
-                from: "Video",
+                from: "videos",
                 localField: "watchHistory",
                 foreignField: "_id",
                 as: "watchHistory",
                 pipeline: [
                     {
                         $lookup: {
-                            from: "User ",
+                            from: "users",
                             localField: "owner",
                             foreignField: "_id",
                             as: "owner",
