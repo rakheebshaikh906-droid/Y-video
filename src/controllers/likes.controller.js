@@ -1,6 +1,7 @@
 import mongoose, { isValidObjectId } from "mongoose"
 import { Video } from "../models/video.models.js"
 import { Like } from "../models/likes.models.js"
+import { Comment } from "../models/comment.models.js"
 import { Tweet } from "../models/tweets.models.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponce } from "../utils/ApiResponse.js"
