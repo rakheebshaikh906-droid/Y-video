@@ -9,9 +9,11 @@ router.use(verifyJwt);
 router.route("/").post(createPlaylist);
 router.route("/user").get(getUserPlaylists);
 router.route("/:playlistId").get(getPlaylistById);
-router.route("/:playlistId").delete(deletePlaylist);
 router.route("/:playlistId").patch(updatePlaylist);
-router.route("/:playlistId").delete(removeVideoFromPlaylist);
+router.route("/:playlistId").delete(deletePlaylist);
+
+router.route("/:playlistId/videos/:videoId")
+    .delete(removeVideoFromPlaylist);
 
 
 
