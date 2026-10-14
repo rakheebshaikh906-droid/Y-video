@@ -112,22 +112,31 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Video file is required");
     }
 
-    const uploadedVideo = await uploadOnCloudinary(videoFile.path);
+    const thumbnailFile = req.files?.thumbnail?.[0];
 
-    if (!uploadedVideo) {
-        throw new ApiError(500, "Video upload failed");
+    if (!thumbnailFile) {
+        throw new ApiError(400, "Thumbnail is required");
+    }
+
+    const uploadedVideo = await uploadToCloudinary(videoFile.path);
+    const uploadedThumbnail = await uploadToCloudinary(thumbnailFile.path);
+
+    if (!uploadedVideo?.secure_url || !uploadedThumbnail?.secure_url) {
+        throw new ApiError(500, "Video or thumbnail upload failed");
+    }
+
+    if (typeof uploadedVideo.duration !== "number") {
+        throw new ApiError(500, "Video duration could not be determined");
     }
 
     const video = await Video.create({
-        videoFile: uploadedVideo.url,
-        title,
-        description,
+        videoFile: uploadedVideo.secure_url,
+        thumbnail: uploadedThumbnail.secure_url,
+        duration: uploadedVideo.duration,
+        title: title.trim(),
+        description: description.trim(),
         owner: req.user._id
     });
-
-    if (!video) {
-        throw new ApiError(500, "Something went wrong while publishing video");
-    }
 
     return res
         .status(201)
@@ -227,7 +236,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
         throw new ApiError(403, "You are not authorized to delete this video");
     }
 
-    await video.findByIdAndDelete(videoId);
+    await Video.findByIdAndDelete(videoId);
 
 
     return res.status(200).json(new ApiResponce(200, null, "Video deleted successfully"));
