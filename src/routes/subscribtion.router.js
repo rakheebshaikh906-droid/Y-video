@@ -7,7 +7,7 @@ const router = Router();
 
 router.use(verifyJwt);
 
-router.route("/").post(toggleSubscription);
+router.route("/channel/:channelId").post(toggleSubscription);
 router.route("/user/:userId").get(getUserSubscriptions);
 router.route("/channel/:channelId").get(getSubscribedChannels);
 
