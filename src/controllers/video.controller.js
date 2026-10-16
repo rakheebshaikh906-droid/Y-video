@@ -157,6 +157,7 @@ const getVideoById = asyncHandler(async (req, res) => {
 
     const video = await Video.findById(videoId);
 
+
     if (!video) {
         throw new ApiError(404, "Video not found");
     }
@@ -287,3 +288,5 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 });
 
 export { getAllVideos, publishAVideo, getVideoById, updateVideo, deleteVideo, togglePublishStatus }
+
+//Api testing done
