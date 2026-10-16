@@ -25,6 +25,21 @@ const getChannelState = asyncHandler(async (req, res) => {
     const totalVideos = await Video.countDocuments({ owner: channel._id });
     const totalSubscribers = await Subscriber.countDocuments({ channel: channel._id });
     const totalLikes = await Like.countDocuments({ video: { $in: channel.videos } });
+    const totalViews = await Video.aggregate([
+        {
+            $match: { owner: channel._id }
+        },
+        {
+            $group: {
+                _id: null,
+                totalViews: { $sum: "$views" }
+            }
+        }
+    ]);
+
+    const viewsCount = totalViews.length > 0
+        ? totalViews[0].totalViews
+        : 0;
 
     return res.status(200).json(
         new ApiResponce(
@@ -32,7 +47,8 @@ const getChannelState = asyncHandler(async (req, res) => {
             {
                 totalVideos,
                 totalSubscribers,
-                totalLikes
+                totalLikes,
+                totalViews: viewsCount
             },
             "Channel stats fetched successfully"
         )
