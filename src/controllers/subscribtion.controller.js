@@ -117,3 +117,5 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 });
 
 export { toggleSubscription, getUserSubscriptions, getSubscribedChannels }
+
+//Api testing done successfully
