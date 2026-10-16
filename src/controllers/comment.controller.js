@@ -83,3 +83,5 @@ const deleteComment = asyncHandler(async (req, res) => {
 })
 
 export { addComment, updateComment, deleteComment, getVideoComment };
+
+//Api testing done successfully
