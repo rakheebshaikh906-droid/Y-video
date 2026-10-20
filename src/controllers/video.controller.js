@@ -154,8 +154,11 @@ const getVideoById = asyncHandler(async (req, res) => {
     if (!isValidObjectId(videoId)) {
         throw new ApiError(400, "Invalid video id");
     }
-
-    const video = await Video.findById(videoId);
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        { $inc: { views: 1 } },
+        { new: true }
+    );
 
 
     if (!video) {
@@ -289,4 +292,4 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 
 export { getAllVideos, publishAVideo, getVideoById, updateVideo, deleteVideo, togglePublishStatus }
 
-//Api testing done
+//api testing done
