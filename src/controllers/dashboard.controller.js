@@ -24,7 +24,16 @@ const getChannelState = asyncHandler(async (req, res) => {
 
     const totalVideos = await Video.countDocuments({ owner: channel._id });
     const totalSubscribers = await Subscriber.countDocuments({ channel: channel._id });
-    const totalLikes = await Like.countDocuments({ video: { $in: channel.videos } });
+    const channelVideos = await Video.find(
+        { owner: channel._id },
+        { _id: 1 }
+    );
+
+    const videoIds = channelVideos.map(video => video._id);
+
+    const totalLikes = await Like.countDocuments({
+        video: { $in: videoIds }
+    });
     const totalViews = await Video.aggregate([
         {
             $match: { owner: channel._id }
