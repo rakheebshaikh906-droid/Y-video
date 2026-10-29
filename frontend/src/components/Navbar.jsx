@@ -4,25 +4,45 @@ import { Link } from "react-router-dom";
 import {
     Menu,
     Search,
-    Mic,
     Plus,
     Bell,
     Play,
+    LogIn,
+    LogOut,
 } from "lucide-react";
 
-function Navbar({ onMenuClick, onSearch }) {
+function Navbar({
+    onMenuClick,
+    onSearch,
+    isLoggedIn = false,
+    onLogout,
+}) {
     const [searchQuery, setSearchQuery] = useState("");
+    const [loggingOut, setLoggingOut] = useState(false);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
+    function handleSearch(event) {
+        event.preventDefault();
         onSearch?.(searchQuery.trim());
-    };
+    }
+
+    async function handleLogout() {
+        if (!onLogout) return;
+
+        setLoggingOut(true);
+
+        try {
+            await onLogout();
+        } finally {
+            setLoggingOut(false);
+        }
+    }
 
     return (
-        <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between gap-4 border-b border-white/10 bg-[#0f0f0f] px-4 text-white md:px-6">
-            {/* Left: Menu and Logo */}
-            <div className="flex shrink-0 items-center gap-3">
+        <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between gap-2 border-b border-white/10 bg-[#0f0f0f] px-3 text-white sm:gap-4 sm:px-4 md:px-6">
+            {/* Menu and Logo */}
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 <button
+                    type="button"
                     onClick={onMenuClick}
                     aria-label="Toggle sidebar"
                     className="rounded-full p-2 hover:bg-white/10"
@@ -31,72 +51,93 @@ function Navbar({ onMenuClick, onSearch }) {
                 </button>
 
                 <Link to="/" className="flex items-center gap-2">
-                    <span className="flex h-8 w-10 items-center justify-center rounded-lg bg-red-600">
+                    <span className="flex h-8 w-9 items-center justify-center rounded-lg bg-red-600">
                         <Play size={21} fill="white" />
                     </span>
 
-                    <span className="text-xl font-extrabold tracking-tight">
+                    <span className="hidden text-xl font-extrabold tracking-tight sm:inline">
                         <span className="text-red-500">Y</span>Video
                     </span>
                 </Link>
             </div>
 
-            {/* Center: Search */}
+            {/* Search */}
             <form
                 onSubmit={handleSearch}
-                className="mx-auto hidden w-full max-w-2xl items-center sm:flex"
+                role="search"
+                className="flex min-w-0 max-w-2xl flex-1 items-center"
             >
-                <div className="flex h-10 min-w-0 flex-1 items-center rounded-l-full border border-white/20 bg-[#121212] pl-4 focus-within:border-blue-500">
-                    <input
-                        type="search"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search videos, channels, or topics..."
-                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-gray-400"
-                    />
-                </div>
+                <input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder="Search videos"
+                    aria-label="Search videos"
+                    className="min-w-0 flex-1 rounded-l-full border border-r-0 border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none placeholder:text-gray-400 focus:border-blue-500 sm:px-5"
+                />
 
                 <button
                     type="submit"
-                    aria-label="Search videos"
-                    className="flex h-10 w-16 items-center justify-center rounded-r-full border border-l-0 border-white/20 bg-white/10 hover:bg-white/20"
+                    aria-label="Search"
+                    className="rounded-r-full border border-zinc-700 bg-zinc-800 px-3 py-2 hover:bg-zinc-700 sm:px-5"
                 >
-                    <Search size={21} />
-                </button>
-
-                <button
-                    type="button"
-                    aria-label="Voice search"
-                    className="ml-3 rounded-full bg-white/10 p-2.5 hover:bg-white/20"
-                >
-                    <Mic size={20} />
+                    <Search size={20} />
                 </button>
             </form>
 
-            {/* Right: Actions */}
-            <div className="flex shrink-0 items-center gap-2 md:gap-4">
-                <Link
-                    to="/upload"
-                    className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/20"
-                >
-                    <Plus size={20} />
-                    <span className="hidden md:inline">Create</span>
-                </Link>
+            {/* Actions */}
+            <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+                {isLoggedIn && (
+                    <Link
+                        to="/upload"
+                        className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-2 text-sm font-semibold hover:bg-white/20 sm:px-3"
+                    >
+                        <Plus size={20} />
+                        <span className="hidden md:inline">Create</span>
+                    </Link>
+                )}
 
-                <button
-                    aria-label="Notifications"
-                    className="rounded-full p-2 hover:bg-white/10"
-                >
-                    <Bell size={22} />
-                </button>
+                {isLoggedIn && (
+                    <button
+                        type="button"
+                        aria-label="Notifications"
+                        className="hidden rounded-full p-2 hover:bg-white/10 sm:inline-flex"
+                    >
+                        <Bell size={22} />
+                    </button>
+                )}
 
-                <Link
-                    to="/channel"
-                    aria-label="My channel"
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-purple-600 text-sm font-bold ring-2 ring-white/10"
-                >
-                    Y
-                </Link>
+                {isLoggedIn ? (
+                    <>
+                        <Link
+                            to="/channel"
+                            aria-label="My channel"
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-purple-600 text-sm font-bold"
+                        >
+                            Y
+                        </Link>
+
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            disabled={loggingOut}
+                            className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-2 text-sm font-medium hover:bg-white/20 disabled:opacity-50"
+                        >
+                            <LogOut size={17} />
+                            <span className="hidden sm:inline">
+                                {loggingOut ? "Logging out..." : "Logout"}
+                            </span>
+                        </button>
+                    </>
+                ) : (
+                    <Link
+                        to="/login"
+                        className="inline-flex items-center gap-1 rounded-full border border-zinc-600 px-3 py-2 text-sm font-semibold hover:bg-white/10"
+                    >
+                        <LogIn size={17} />
+                        <span>Sign in</span>
+                    </Link>
+                )}
             </div>
         </header>
     );
