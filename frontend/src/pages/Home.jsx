@@ -4,7 +4,7 @@ import CategoryBar from "../components/CategoryBar";
 import VideoGrid from "../components/VideoGrid";
 import { getAllVideos } from "../services/videoService";
 
-function Home() {
+function Home({ searchQuery = "", onSearchClear }) {
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [videos, setVideos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -18,14 +18,16 @@ function Home() {
                 setLoading(true);
                 setError("");
 
-                const response = await getAllVideos();
+                const response = await getAllVideos({
+                    page: 1,
+                    limit: 12,
+                    query: searchQuery,
+                });
 
-                // API response mein videos kis property mein hain,
-                // uske hisaab se data extract karenge.
                 const videoList =
-                    response?.data?.videos ??
                     response?.data?.docs ??
-                    response?.data ??
+                    response?.data?.videos ??
+                    response?.data?.results ??
                     [];
 
                 if (!Array.isArray(videoList)) {
@@ -38,8 +40,7 @@ function Home() {
             } catch (err) {
                 if (!cancelled) {
                     setError(
-                        err.message ||
-                        "Videos load nahi ho paayi. Please try again."
+                        err.message || "Videos load nahi ho paayi. Please try again."
                     );
                 }
             } finally {
@@ -54,18 +55,47 @@ function Home() {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [searchQuery]);
+
+    function handleCategoryChange(category) {
+        setSelectedCategory(category);
+
+        // Backend abhi sirf title search support karta hai.
+        // Category filtering ko alag se implement karna hoga.
+        if (category !== "All") {
+            setError(`"${category}" category filtering abhi available nahi hai.`);
+        } else {
+            setError("");
+        }
+    }
 
     return (
         <main className="min-h-screen bg-white px-4 py-5 dark:bg-black sm:px-6">
-            <CategoryBar onCategoryChange={setSelectedCategory} />
+            <CategoryBar onCategoryChange={handleCategoryChange} />
 
             <section>
-                <h1 className="mb-5 text-xl font-bold text-gray-900 dark:text-white">
-                    {selectedCategory === "All"
-                        ? "Recommended videos"
-                        : selectedCategory}
-                </h1>
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {searchQuery
+                            ? `Search results for "${searchQuery}"`
+                            : selectedCategory === "All"
+                                ? "Recommended videos"
+                                : selectedCategory}
+                    </h1>
+
+                    {searchQuery && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onSearchClear?.();
+                                setSelectedCategory("All");
+                            }}
+                            className="text-sm font-medium text-red-600 hover:underline"
+                        >
+                            Clear search
+                        </button>
+                    )}
+                </div>
 
                 <VideoGrid
                     videos={videos}
@@ -78,5 +108,3 @@ function Home() {
 }
 
 export default Home;
-
-//home.jsx 
