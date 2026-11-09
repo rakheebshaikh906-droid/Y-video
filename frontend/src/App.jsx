@@ -14,6 +14,7 @@ import Channel from "./pages/Channel";
 import { getAccessToken } from "./services/api";
 import { logoutUser } from "./services/authService";
 import { LogIn, LogOut } from "lucide-react";
+import History from "./pages/history";
 
 
 function AppLayout() {
@@ -73,6 +74,7 @@ function AppLayout() {
             <Route path="/upload" element={<UploadVideo />} />
             <Route path="/watch/:videoId" element={<WatchVideo />} />
             <Route path="/channel" element={<Channel />} />
+            <Route path="/history" element={<History />} />
           </Routes>
         </div>
       </div>
