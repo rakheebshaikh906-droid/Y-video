@@ -10,8 +10,7 @@ import {
     LogIn,
     LogOut,
 } from "lucide-react";
-//buggs
-//buggs
+
 function Navbar({
     onMenuClick,
     onSearch,
