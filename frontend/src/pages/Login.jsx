@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
 
-function Login(onLoginSuccess) {
+function Login({ onLoginSuccess }) {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
