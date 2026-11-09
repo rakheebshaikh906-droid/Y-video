@@ -149,21 +149,33 @@ const publishAVideo = asyncHandler(async (req, res) => {
         );
 });
 
+
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
+
     if (!isValidObjectId(videoId)) {
         throw new ApiError(400, "Invalid video id");
     }
+
     const video = await Video.findByIdAndUpdate(
         videoId,
         { $inc: { views: 1 } },
         { new: true }
     );
 
-
     if (!video) {
         throw new ApiError(404, "Video not found");
     }
+
+    // Add video to logged-in user's watch history
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $addToSet: {
+                watchHistory: video._id
+            }
+        }
+    );
 
     return res
         .status(200)
@@ -174,7 +186,8 @@ const getVideoById = asyncHandler(async (req, res) => {
                 "Video fetched successfully"
             )
         );
-})
+});
+
 
 const updateVideo = asyncHandler(async (req, res) => {
 
