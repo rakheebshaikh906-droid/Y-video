@@ -306,3 +306,4 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 export { getAllVideos, publishAVideo, getVideoById, updateVideo, deleteVideo, togglePublishStatus }
 
 //api testing done
+//video controller is complete
