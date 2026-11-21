@@ -90,3 +90,5 @@ const getChannelVideos = asyncHandler(async (req, res) => {
 })
 
 export { getChannelState, getChannelVideos }
+//dashboard.controller.js
+
